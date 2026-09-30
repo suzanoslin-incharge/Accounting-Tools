@@ -1,0 +1,17 @@
+{
+  "name": "incharge-accounting-tools",
+  "owner": {
+    "name": "InCharge Energy",
+    "email": "extern.suzan.oslin@inchargeus.com"
+  },
+  "plugins": [
+    {
+      "name": "accounting-tools",
+      "source": "./",
+      "description": "Accounting/finance-specific tools for InCharge: automation and knowledge tied to InCharge's own systems, data, and vocabulary (Business Central, Salesforce, Ramp, bank feeds, etc.).",
+      "version": "0.1.0",
+      "skills": [],
+      "agents": []
+    }
+  ]
+}
