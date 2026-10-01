@@ -24,15 +24,13 @@ skills/
     references/          Knowledge only THIS skill needs.
 agents/
   <agent-name>.md         Subagent definitions
-shared-knowledge/
-  org-glossary.md          InCharge accounting/ops terms, roles, LOB shorthand
-  systems-landscape.md     Systems of record and what each owns
 ```
 
-`shared-knowledge/` here is intentionally Accounting-specific (moved from
-the productivity repo once we realized general-purpose skills shouldn't
-hard-depend on one department's glossary). A skill in this repo can assume
-these files exist; a skill in the productivity repo should not.
+The org glossary and systems landscape live in the productivity repo
+(`productivity-tools/shared-knowledge/`, `$TOOLS_PRODCTVTY`), since several
+skills across departments use them. Skills here can read them from there.
+Put Accounting-only reference material in a `references/` folder inside the
+skill that needs it.
 
 ## Source material
 
@@ -40,15 +38,15 @@ The fuller current-state narrative (systems, people, process detail, open
 questions) lives in the Accounting team's working notebook:
 `Accounting-MyNotes/Current-State Accounting Processes Report.md`. That
 folder stays a personal/team working notebook in OneDrive, not synced here —
-pull a curated summary into `shared-knowledge/` only when a skill needs to
+pull a curated summary into a skill's `references/` only when a skill needs to
 load it automatically.
 
 ## Status
 
-- [x] Repo scaffolded, `shared-knowledge/` populated from the productivity
-      repo split
+- [x] Repo scaffolded; glossary and landscape moved to the productivity repo
+      (2026-10-01)
 - [ ] Pushed to GitHub
 - [ ] First accounting-specific skill (candidates from the current-state
       report: bank-transaction/remittance matching, AP invoice-exception
       triage, PO-receipt reconciliation)
-- [ ] `shared-knowledge/org-glossary.md` reviewed by Delphine
+- [ ] `productivity-tools/shared-knowledge/org-glossary.md` reviewed by Delphine
