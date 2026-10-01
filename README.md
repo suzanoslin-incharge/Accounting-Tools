@@ -6,7 +6,7 @@ Ramp, PayFabric, bank feeds), its processes (O2C, P2P, R2R), and its
 vocabulary (RSS, EPC, LOB, etc.).
 
 This is the sibling to
-[`incharge-productivity-tools`](../incharge-productivity-tools), which holds
+[`productivity-tools`](../productivity-tools), which holds
 general-purpose tools any department could use (process mapping, and
 whatever else follows). The test for which repo something belongs in: would
 this be just as useful to Product, HR, or Service as it is to Accounting? If
