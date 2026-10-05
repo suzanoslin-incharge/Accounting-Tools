@@ -16,6 +16,7 @@ with Accounting's own data, systems, or vocabulary baked in, it belongs here.
 ## Layout
 
 ```
+CLAUDE.md               Instructions for Claude Code sessions in this repo
 .claude-plugin/
   marketplace.json      Plugin manifest
 skills/
@@ -45,7 +46,8 @@ load it automatically.
 
 - [x] Repo scaffolded; glossary and landscape moved to the productivity repo
       (2026-10-01)
-- [ ] Pushed to GitHub
+- [x] Pushed to GitHub (`origin/main`, 2026-10-01)
+- [x] `CLAUDE.md` added (2026-10-05): repo purpose, which-repo rule, git and approval rules
 - [ ] First accounting-specific skill (candidates from the current-state
       report: bank-transaction/remittance matching, AP invoice-exception
       triage, PO-receipt reconciliation)
