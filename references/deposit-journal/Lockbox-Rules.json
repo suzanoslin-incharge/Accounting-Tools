@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "note": "Rules the lockbox tool reads at the start of each run. Changed only after Suzan approves a proposal.",
+  "departments": {
+    "default": [
+      "1000",
+      "2000"
+    ],
+    "by_customer": {}
+  },
+  "min_confirmations": 3,
+  "prune": {
+    "answered_flag_days": 90,
+    "unanswered_flag_days": 60,
+    "decided_suggestion_days": 183
+  }
+}

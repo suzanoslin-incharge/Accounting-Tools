@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "flags": [
+    {
+      "raised_on": "2026-10-01",
+      "type": "department",
+      "customer": "C01871",
+      "code": "4160",
+      "payment_date": "2026-10-01",
+      "check_no": "7253097",
+      "invoice": "S-INV012544",
+      "response": null
+    },
+    {
+      "raised_on": "2026-10-01",
+      "type": "department",
+      "customer": "C04225",
+      "code": "5100",
+      "payment_date": "2026-10-01",
+      "check_no": "103817",
+      "invoice": "S-INV013447",
+      "response": null
+    }
+  ],
+  "proposals": []
+}
