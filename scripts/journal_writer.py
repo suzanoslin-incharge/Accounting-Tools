@@ -21,10 +21,12 @@ from openpyxl.styles import Alignment, Font
 from bc_match import MatchResult
 from rules import department_ok, load_rules
 
-DESCRIPTION = "ELECTRNIC LOCKBOX CR"   # spelled the way the bank spells it
-COLUMNS = ["Transaction Date", "Account Name", "Credit Amount", "Account Type", "Account No.",
-           "Description", "Department", "Project Code", "Document Type", "Document No.",
-           "External Document No."]
+# Columns A to I follow the order of the bank deposit lines in BC (only the ones used).
+# Account Name and Department come after them: they are for review and are not BC line columns.
+# Description is left blank: BC fills it in from the customer number.
+COLUMNS = ["Account Type", "Account No.", "Description", "Project Code", "Document Date",
+           "Document Type", "Document No.", "External Document No.", "Credit Amount",
+           "Account Name", "Department"]
 FONT = "Calibri"
 SIZE = 12
 
@@ -39,20 +41,24 @@ class JournalLine:
     department: str
     project_code: str
     external_document_no: str
-    reason: str = ""          # detail; not written to the journal, goes to the measures workbook
-    reason_code: str = ""     # a Reason from the measures workbook list
+    reason: str = ""          # detail; not written to the journal, goes to the Transactions-and-Metrics workbook
+    reason_code: str = ""     # a Reason from the Transactions-and-Metrics workbook list
     note: str = ""
     payer: str = ""           # payer name as read from the check
     check_no: str = ""
     flag_type: str = ""       # for the learnings file, for example "department"
     flag_customer: str = ""
     flag_code: str = ""
+    item_no: str = ""         # item number in the lockbox file; the key when a check number is blank
+    currency: str = ""        # BC currency code of the matched invoice; blank means US dollars
+    known_exception: bool = False   # expected to be flagged (G/L account needed, Canadian): orange in the workbook
+    flag_detail: str = ""     # for the learnings file: the BC customer name when the flag is a payer name
 
 
 def lines_for_check(value_date: str, check_amount: Decimal, payer: str,
                     stub_numbers: List[str], matches: List[MatchResult],
                     stub_amounts: Optional[List[Decimal]] = None, check_no: str = "",
-                    rules: Optional[dict] = None) -> List[JournalLine]:
+                    rules: Optional[dict] = None, item_no: str = "") -> List[JournalLine]:
     """One JournalLine per match result. The lines must add up to the check amount.
 
     With one invoice, the line is the check amount. With several, the caller must
@@ -70,24 +76,27 @@ def lines_for_check(value_date: str, check_amount: Decimal, payer: str,
             amt = Decimal("0")
             m.status, m.reason = "flagged", (m.reason + "; " if m.reason else "") + \
                 "check pays several invoices and the stub amount for this one was not read"
-            m.code = m.code or "Remittance wrong or unclear"
+            m.code = m.code or "Amounts do not add up"
         inv = m.invoice or {}
         dept = inv.get("shortcutDimension1Code", "")
         cust = inv.get("customerNumber", "")
-        if dept and not department_ok(rules, cust, dept):    # copied as is, but Walter should look
+        if (dept and rules["departments"]["default"]
+                and not department_ok(rules, cust, dept)):   # copied as is either way
             m.reason = (m.reason + "; " if m.reason else "") + \
-                f"department {dept} on the invoice (customer {cust}) is not 1000 or 2000 (copied from the invoice; please confirm)"
+                f"department {dept} on the invoice (customer {cust}) is not on the Dept codes list (copied from the invoice; add it to the list if it is right)"
             m.status, m.code = "flagged", m.code or "Other (see notes)"
-            flag = ("department", cust, dept)
-        else:
-            flag = ("", "", "")
+        flag = ("", "", "")
         known = m.status == "matched" or bool(inv)
         out.append(JournalLine(
             date, inv.get("customerName", "") if known else payer, amt,
             "Customer" if inv else "", inv.get("customerNumber", ""),
             inv.get("shortcutDimension1Code", ""), inv.get("shortcutDimension2Code", ""),
             inv.get("number", ""), m.reason if m.status == "flagged" else "", 
-            m.code if m.status == "flagged" else "", m.note, payer, check_no, *flag))
+            m.code if m.status == "flagged" else "", m.note, payer, check_no, *flag, item_no))
+    for l, m in zip(out, matches):
+        l.currency = (m.invoice or {}).get("currencyCode") or ""
+        if m.flag[0] and not l.flag_type:                      # a payer-name flag, when no department flag is set
+            l.flag_type, l.flag_customer, l.flag_code, l.flag_detail = m.flag
     if sum((l.credit_amount for l in out), Decimal("0")) != check_amount:
         for l in out:
             l.reason = (l.reason + "; " if l.reason else "") + "lines do not add up to the check amount"
@@ -118,17 +127,17 @@ def write_journal(template: str, output: str, lines: List[JournalLine]) -> Path:
     for c in ws[1]:
         c.font = Font(name=FONT, size=SIZE, bold=True)
     for r, l in enumerate(lines, start=2):
-        vals = [l.transaction_date, l.account_name, float(l.credit_amount), l.account_type,
-                l.account_no, DESCRIPTION, l.department, l.project_code, "Payment", None,
-                l.external_document_no]
+        vals = [l.account_type, l.account_no, None, l.project_code, l.transaction_date,
+                "Payment", None, l.external_document_no, float(l.credit_amount),
+                l.account_name, l.department]
         for c, v in enumerate(vals, start=1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = base
             cell.alignment = Alignment(vertical="top")
-        ws.cell(row=r, column=1).number_format = "yyyy-mm-dd"
-        ws.cell(row=r, column=3).number_format = "#,##0.00"
+        ws.cell(row=r, column=5).number_format = "yyyy-mm-dd"
+        ws.cell(row=r, column=9).number_format = "#,##0.00"
     ws.column_dimensions.clear()   # the template groups columns E and F; set each one alone
-    for i, w in enumerate([19, 40, 16, 15, 14, 27, 14, 19, 17, 16, 26], start=1):
+    for i, w in enumerate([15, 14, 27, 19, 16, 17, 16, 26, 16, 40, 14], start=1):
         cd = ws.column_dimensions[openpyxl.utils.get_column_letter(i)]
         cd.min = cd.max = i
         cd.width = w

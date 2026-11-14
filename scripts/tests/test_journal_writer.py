@@ -5,8 +5,7 @@ import openpyxl
 from bc_match import MatchResult
 import journal_writer as J
 
-TPL = os.path.expanduser("~/OneDrive - In Charge Service/Accounting - Internal - Documents/Bank/"
-      "Checks Received/Automated_Deposit_Journals/Template_Automated_Deposit_Journal.xlsx")
+TPL = os.path.join(os.path.dirname(__file__), "../../references/deposit-journal/Template_Automated_Deposit_Journal.xlsx")
 INV = {"number":"S-INV012858","customerNumber":"C04343","customerName":"LA QUINTA CHEVROLET",
        "shortcutDimension1Code":"2000","shortcutDimension2Code":"071273626"}
 
@@ -33,10 +32,10 @@ class T(unittest.TestCase):
             out = os.path.join(d, "2026_10", "ADP_2026.10.01.xlsx")
             J.write_journal(TPL, out, ls)
             ws = openpyxl.load_workbook(out)["Lockbox"]
-            self.assertEqual([c.value for c in ws[2]][1:9],
-                ["LA QUINTA CHEVROLET", 845.0, "Customer", "C04343", "ELECTRNIC LOCKBOX CR",
-                 "2000", "071273626", "Payment"])
-            self.assertEqual(ws["K2"].value, "S-INV012858")
-            self.assertGreaterEqual(ws["B2"].font.size, 12)
+            self.assertEqual([c.value for c in ws[2]][:4] + [c.value for c in ws[2]][5:],
+                ["Customer", "C04343", None, "071273626", "Payment", None, "S-INV012858",
+                 845.0, "LA QUINTA CHEVROLET", "2000"])
+            self.assertIsNone(ws["C2"].value)           # Description: BC fills it from the customer number
+            self.assertGreaterEqual(ws["J2"].font.size, 12)
             with self.assertRaises(FileExistsError): J.write_journal(TPL, out, ls)
 if __name__ == "__main__": unittest.main()
